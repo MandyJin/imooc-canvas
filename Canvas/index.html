@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Canvas学习</title>
+		<style type="text/css">
+		#canvas{
+			border: 1px solid grey;
+			margin: 50px auto;
+			display: block;
+		}
+	</style>
+	</head>
+	
+	<body>
+		<!--建议直接在标签内指定宽高度，不建议在样式css中指定，两者的概念不同，css中指画布的宽高度，标签内指定是canvas内容的宽高度-->
+		<canvas id="canvas" width="1024" height="768">
+			当用户浏览器不支持Canvas,请更换浏览器后再试<!--支持的时候这条语句是被忽略的-->
+		</canvas>
+		<script type="text/javascript">
+			window.onload=function draw() {
+				var canvas=document.getElementById("canvas");
+				/*也可以在JS中用语句判断浏览器是否支持  */
+			if(canvas.getContext("2d")){
+				var context = canvas.getContext("2d");
+				context.beginPath();
+				context.moveTo(100,100);
+				context.lineTo(700,700);
+				context.lineTo(100,700);
+				context.lineTo(100,100);
+				context.fillStyle="aqua";
+				context.fill();
+				
+				context.lineWidth=5;
+				context.strokeStyle="crimson"
+				context.stroke();
+				
+				context.beginPath();
+				context.moveTo(200,100);
+				context.lineTo(600,600);
+				context.strokeStyle="black"
+				context.stroke();
+			}else{
+				alert("此浏览器不支持Canvas，请更换浏览器后重试！")
+			}
+				
+			}
+			
+		</script>
+	</body>
+</html>

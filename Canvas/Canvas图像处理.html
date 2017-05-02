@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			#canvas{
+				display: block;
+				margin: 0 auto;
+				border: 1px solid #aaa;
+			} 
+		</style>
+	</head>
+	<body>
+		<canvas id="canvas" >
+			您的浏览器不支持canvas
+		</canvas>
+		<script type="text/javascript">
+			var canvas = document.getElementById("canvas");
+			var context = canvas.getContext("2d");
+			var image = new Image();
+			
+			window.onload=function(){
+				canvas.width=400;
+				canvas.height=400;
+				image.src="img/img.jpg"
+				image.onload=function(){
+					context.drawImage(image,0,0,canvas.width,canvas.height);
+					context.drawImage(image,300,100,200,200,0,0,canvas.width,canvas.height);
+				}
+			}
+		</script>
+	</body>
+</html>

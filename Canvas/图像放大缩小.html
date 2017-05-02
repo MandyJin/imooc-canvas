@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>图像缩放&&加水印</title>
+		<style type="text/css">
+			
+			#canvas{
+				display: block;
+				margin: 50px auto;
+				border: 1px solid #aaa;
+			} 
+			#scale-range{
+				display: block;margin: 20px auto;width: 800px;
+			}
+			#watermark-canvas{
+				display: none;
+				margin: 0 auto;
+				border: 1px solid #aaa;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="canvas" >
+			您的浏览器不支持canvas
+		</canvas>
+		<input type="range" id="scale-range" min="0.5" max="3.0" step="0.01" value="1.0"/>
+		<canvas id="watermark-canvas" ></canvas>
+		<script type="text/javascript">
+			var canvas = document.getElementById("canvas");
+			var context = canvas.getContext("2d");
+			var slider = document.getElementById("scale-range");
+			var image = new Image();
+			
+			var watermarkCanvas = document.getElementById("watermark-canvas");
+			var watermarkContext = watermarkCanvas.getContext("2d");
+			
+			window.onload=function(){
+				canvas.width=690;
+				canvas.height=517;
+				
+				var scale = slider.value;
+				
+				image.src="img/img.jpg"
+				image.onload=function(){
+					//context.drawImage(image,0,0,canvas.width,canvas.height);
+					//context.drawImage(image,300,100,200,200,0,0,canvas.width,canvas.height);
+					drawImageByScale(scale)
+					
+					slider.onmousemove=function(){
+						scale=slider.value;
+						drawImageByScale(scale);
+					}
+				}
+			}
+			
+			//setup watermark canvas——离屏Canvas技术
+			watermarkCanvas.width=600;
+			watermarkCanvas.height=100;
+			watermarkContext.font="bold 50px Arial";
+			watermarkContext.fillStyle="rgba(255,255,255,0.5)";
+			watermarkContext.textBaseline="middle";
+			watermarkContext.fillText("==JinYingying==",200,20);
+			function drawImageByScale(scale){
+				var imageWidth = 690*scale;
+				var imageHeight = 517*scale;
+			    
+			    //方法一：裁剪的方式，对于缩小图像不适用，放大倍数过大也不正确
+			    /*var sx = imageWidth*0.5-canvas.width*0.5;
+				var sy = imageHeight*0.5-canvas.height*0.5;	    
+		
+				context.drawImage(image,sx,sy,canvas.width,canvas.height,0,0,canvas.width,canvas.height);*/
+				
+				//方法二：dx描述的是目标图像左上角的开始的位置，即放大或缩小的图像全部显示，多出画布的部分从（dx,dy）处裁掉
+				//为什么放大后dx是负的，假设放大后原图像的坐标是(0,0),(dx,dy)在放大后的图像内，是向里裁切
+				var dx = canvas.width*0.5-imageWidth*0.5;
+				var dy = canvas.height*0.5-imageHeight*0.5;
+				context.clearRect(0,0,canvas.width,canvas.height);
+				context.drawImage(image,dx,dy,imageWidth,imageHeight);
+				context.drawImage(watermarkCanvas,canvas.width-watermarkCanvas.width,canvas.height-watermarkCanvas.height);
+			}
+			
+		</script>
+		
+	</body>
+</html>

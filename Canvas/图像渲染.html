@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>图像渲染</title>
+		<style type="text/css">
+			
+			#canvasa{
+				display: block;
+				border: 1px solid #000000;
+				float: left;
+			}
+			#canvasb{
+				border: 1px solid #000000;
+				margin-left: 60px;
+			}
+		</style>
+	</head>
+	<body>
+		<div style="margin: 20px auto;width: 1700px;">
+			<canvas id="canvasa" width="800" height="560"></canvas>
+			<canvas id="canvasb" width="800" height="560"></canvas>
+		</div>
+		<div style="clear: both;"></div>
+		<div style="text-align: center;margin-top: 50px;font-size: 20px;" >
+			<a href="javascript:greyEffect()">Grey Effect</a>
+			<a href="javascript:blackEffect()">Black Effect</a>
+			<a href="javascript:reverseEffect()">Reverse Effect</a>
+			<a href="javascript:blurEffect()">Blur Effect</a>
+			<a href="javascript:mosaicEffect()">Mosaic Effect</a>
+		</div>
+		<script type="text/javascript">
+			var canvasa = document.getElementById("canvasa");
+			var contexta = canvasa.getContext("2d");
+			
+			var canvasb = document.getElementById("canvasb");
+			var contextb = canvasb.getContext("2d");
+			
+			var image = new Image();
+			window.onload=function(){
+				image.src="img/img.jpg";
+				image.onload = function(){
+					contexta.drawImage(image,0,0,canvasa.width,canvasa.height);
+				}
+			}
+			function greyEffect(){
+				var imageData = contexta.getImageData(0,0,canvasa.width,canvasa.height);
+				//data中存储图像相关的所有像素
+				var pixelData = imageData.data;
+				for (var i=0;i<canvasb.width*canvasb.height;i++) {
+					var r = pixelData[4*i+0];
+					var g = pixelData[4*i+1];
+					var b = pixelData[4*i+2];
+					
+					var grey = r*0.3+g*0.59+b*0.11;
+					
+					pixelData[i*4+0] = grey;
+					pixelData[i*4+1] = grey;
+					pixelData[i*4+2] = grey;
+				}
+				contextb.putImageData(imageData,0,0,0,0,canvasb.width,canvasb.height);
+			}
+			function blackEffect(){
+				var imageData = contexta.getImageData(0,0,canvasa.width,canvasa.height);
+				//data中存储图像相关的所有像素
+				var pixelData = imageData.data;
+				for (var i=0;i<canvasb.width*canvasb.height;i++) {
+					var r = pixelData[4*i+0];
+					var g = pixelData[4*i+1];
+					var b = pixelData[4*i+2];
+					
+					var grey = r*0.3+g*0.59+b*0.11;
+					if (grey>255/2) {
+						v=255;
+					}else{
+						v=0;
+					}
+					
+					pixelData[i*4+0] = v;
+					pixelData[i*4+1] = v;
+					pixelData[i*4+2] = v;
+				}
+				contextb.putImageData(imageData,0,0,0,0,canvasb.width,canvasb.height);
+			}
+			function reverseEffect(){
+				var imageData = contexta.getImageData(0,0,canvasa.width,canvasa.height);
+				//data中存储图像相关的所有像素
+				var pixelData = imageData.data;
+				for (var i=0;i<canvasb.width*canvasb.height;i++) {
+					var r = pixelData[4*i+0];
+					var g = pixelData[4*i+1];
+					var b = pixelData[4*i+2];
+					
+					pixelData[i*4+0] = 255-r;
+					pixelData[i*4+1] = 255-r;
+					pixelData[i*4+2] = 255-r;
+				}
+				contextb.putImageData(imageData,0,0,0,0,canvasb.width,canvasb.height);
+			}
+			function blurEffect(){
+				//临时变量，模糊滤镜扫描到每一个像素点的时候，需要参考周围的像素点，所以要保证周围的像素点不能被算法所修改，
+				//再创建一个临时变量tmpImageData，在具体的算法过程中，不断地参考temImageData,来修改当前的ImageData
+				var tmpImageData = contexta.getImageData(0,0,canvasa.width,canvasa.height);
+				var tmpPixelData = tmpImageData.data;
+				
+				var imageData = contexta.getImageData(0,0,canvasa.width,canvasa.height);
+				//核心思想是遍历每个点周围的8个像素，连这个点自己一共9个像素，计算一个平均值，把这个平均值作为这个点最终的像素颜色值，
+				//这样就得到了一个平均值;            !!!外面双层循环边栏的设置是为了避免内部双层循环的变量取值产生溢出
+				var pixelData = imageData.data;
+				var blurR=3;
+				var totalnum=(2*blurR+1)*(2*blurR+1);
+					for (var i=blurR;i<canvasb.height-blurR;i++) {
+						for (var j=blurR;j<canvasb.width-blurR;j++) {
+							
+							var totalr=0,totalg=0,totalb=0;
+							//遍历(i,j)周围的8个点及自身（dx=0,dy=0）
+							for (var dx=-blurR;dx<=blurR;dx++) {
+								for (var dy=-blurR;dy<=blurR;dy++) {
+									var x=i+dx;
+									var y=j+dy;
+									
+									var p = x*canvasb.width+y;
+									totalr+=tmpPixelData[p*4+0];
+									totalg+=tmpPixelData[p*4+1];
+									totalb+=tmpPixelData[p*4+2];
+								}
+							}
+							var p = i*canvasb.width+j;
+							
+							pixelData[p*4+0]=totalr/totalnum;
+							pixelData[p*4+1]=totalg/totalnum;
+							pixelData[p*4+2]=totalb/totalnum;
+							
+							
+						}
+					}
+				
+				contextb.putImageData(imageData,0,0,0,0,canvasb.width,canvasb.height);
+			}
+			
+			function mosaicEffect(){
+				//临时变量，模糊滤镜扫描到每一个像素点的时候，需要参考周围的像素点，所以要保证周围的像素点不能被算法所修改，
+				//再创建一个临时变量tmpImageData，在具体的算法过程中，不断地参考temImageData,来修改当前的ImageData
+				var tmpImageData = contexta.getImageData(0,0,canvasa.width,canvasa.height);
+				var tmpPixelData = tmpImageData.data;
+				
+				var imageData = contexta.getImageData(0,0,canvasa.width,canvasa.height);
+				//核心思想是遍历每个点周围的8个像素，连这个点自己一共9个像素，计算一个平均值，把这个平均值作为这个点最终的像素颜色值，
+				//这样就得到了一个平均值;            !!!外面双层循环边栏的设置是为了避免内部双层循环的变量取值产生溢出
+				var pixelData = imageData.data;
+				//size的数字需要满足长和宽可以被size整除
+				var size=16;
+				var totalnum=size*size;
+				    //循环（i,j）左上角的坐标
+					for (var i=0;i<canvasb.height;i+=size) {
+						for (var j=0;j<canvasb.width;j+=size) {
+							
+							var totalr=0,totalg=0,totalb=0;
+							//循环每一个马赛克块中的每一个像素点
+							for (var dx=0;dx<=size;dx++) {
+								for (var dy=0;dy<=size;dy++) {
+									var x=i+dx;
+									var y=j+dy;
+									
+									var p = x*canvasb.width+y;
+									totalr+=tmpPixelData[p*4+0];
+									totalg+=tmpPixelData[p*4+1];
+									totalb+=tmpPixelData[p*4+2];
+								}
+							}
+							var p = i*canvasb.width+j;
+							
+							var resr= totalr/totalnum;
+							var resg = totalg/totalnum;
+							var resb = totalb/totalnum;
+							
+							//将计算出的平均值赋给马赛克块中的所有像素点
+							for (var dx=0;dx<size;dx++) {
+								for (var dy=0;dy<size;dy++) {
+									var x=i+dx;
+									var y=j+dy;
+									
+									var p =x*canvasb.width+y;
+									pixelData[p*4+0]=resr;
+									pixelData[p*4+1]=resg;
+									pixelData[p*4+2]=resb;
+								}
+							}
+						}
+					}
+				
+				contextb.putImageData(imageData,0,0,0,0,canvasb.width,canvasb.height);
+			}
+		</script>
+		
+		
+		
+	</body>
+</html>
